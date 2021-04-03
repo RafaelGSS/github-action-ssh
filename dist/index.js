@@ -11304,6 +11304,7 @@ function run() {
                 envMap = envs.split(',').reduce((prev, curr) => {
                     return Object.assign(Object.assign({}, prev), { [curr]: process.env[curr] });
                 }, {});
+                console.log('Envs', JSON.stringify(envMap));
             }
             const commands = command.split('\n');
             for (let i = 0; i < commands.length; i++) {

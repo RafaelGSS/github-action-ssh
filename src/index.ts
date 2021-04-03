@@ -29,6 +29,7 @@ async function run() {
       envMap = envs.split(',').reduce((prev, curr) => {
         return { ...prev, [curr]: process.env[curr] };
       }, {});
+      console.log('Envs', JSON.stringify(envMap))
     }
 
     const commands = command.split('\n')
