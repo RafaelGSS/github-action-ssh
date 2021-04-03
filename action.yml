@@ -28,6 +28,9 @@ inputs:
   tryKeyboard:
     description: "Try keyboard-interactive user authentication if primary user authentication method fails."
     required: false
+  envs:
+    description: "Env variable"
+    required: false
 runs:
   using: "node12"
   main: "dist/index.js"
