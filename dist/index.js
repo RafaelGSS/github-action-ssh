@@ -11296,9 +11296,21 @@ function run() {
         const password = core.getInput('password');
         const passphrase = core.getInput('passphrase');
         const tryKeyboard = !!core.getInput('tryKeyboard');
+        const envs = core.getInput('envs');
         try {
             const ssh = yield connect(host, username, port, privateKey, password, passphrase, tryKeyboard);
-            yield executeCommand(ssh, command);
+            let envMap = {};
+            if (envs) {
+                envMap = envs.split(',').reduce((prev, curr) => {
+                    return Object.assign(Object.assign({}, prev), { [curr]: process.env[curr] });
+                }, {});
+            }
+            const commands = command.split('\n');
+            for (let i = 0; i < commands.length; i++) {
+                const stdout = yield executeCommand(ssh, commands[i], envMap);
+                core.setOutput(`cmd-${i}`, stdout);
+            }
+            console.log('✅ SSH Action finished.');
             ssh.dispose();
         }
         catch (err) {
@@ -11334,27 +11346,19 @@ function connect(host = 'localhost', username, port = 22, privateKey, password, 
         return ssh;
     });
 }
-function executeCommand(ssh, command) {
+function executeCommand(ssh, command, env) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
         console.log(`Executing command: ${command}`);
         try {
-            const { code } = yield ssh.exec(command, [], {
-                stream: 'both',
-                onStdout(chunk) {
-                    console.log(chunk.toString('utf8'));
-                },
-                onStderr(chunk) {
-                    console.log(chunk.toString('utf8'));
-                }
-            });
+            const { code, stdout, stderr } = yield ssh.execCommand(command, { execOptions: { env } });
             if (code > 0) {
                 throw Error(`Command exited with code ${code}`);
             }
-            console.log('✅ SSH Action finished.');
-            if (ssh.isConnected()) {
-                ssh.dispose();
+            if (stderr) {
+                console.error('Stderr', stderr);
             }
+            return stdout;
         }
         catch (err) {
             console.error(`⚠️ An error happened executing command ${command}.`, (_a = err === null || err === void 0 ? void 0 : err.message) !== null && _a !== void 0 ? _a : err);
@@ -20369,7 +20373,7 @@ exports.keyboardFunction = keyboardFunction;
 /***/ 724:
 /***/ (function(module) {
 
-module.exports = {"_args":[["ssh2-streams@0.4.10","/Users/garygrossgarten/Dev/things/github-action-ssh"]],"_from":"ssh2-streams@0.4.10","_id":"ssh2-streams@0.4.10","_inBundle":false,"_integrity":"sha512-8pnlMjvnIZJvmTzUIIA5nT4jr2ZWNNVHwyXfMGdRJbug9TpI3kd99ffglgfSWqujVv/0gxwMsDn9j9RVst8yhQ==","_location":"/ssh2-streams","_phantomChildren":{},"_requested":{"type":"version","registry":true,"raw":"ssh2-streams@0.4.10","name":"ssh2-streams","escapedName":"ssh2-streams","rawSpec":"0.4.10","saveSpec":null,"fetchSpec":"0.4.10"},"_requiredBy":["/ssh2"],"_resolved":"https://registry.npmjs.org/ssh2-streams/-/ssh2-streams-0.4.10.tgz","_spec":"0.4.10","_where":"/Users/garygrossgarten/Dev/things/github-action-ssh","author":{"name":"Brian White","email":"mscdex@mscdex.net"},"bugs":{"url":"https://github.com/mscdex/ssh2-streams/issues"},"dependencies":{"asn1":"~0.2.0","bcrypt-pbkdf":"^1.0.2","streamsearch":"~0.1.2"},"description":"SSH2 and SFTP(v3) client/server protocol streams for node.js","engines":{"node":">=5.2.0"},"homepage":"https://github.com/mscdex/ssh2-streams#readme","keywords":["ssh","ssh2","sftp","secure","protocol","streams","client","server"],"licenses":[{"type":"MIT","url":"http://github.com/mscdex/ssh2-streams/raw/master/LICENSE"}],"main":"./index","name":"ssh2-streams","repository":{"type":"git","url":"git+ssh://git@github.com/mscdex/ssh2-streams.git"},"scripts":{"test":"node test/test.js"},"version":"0.4.10"};
+module.exports = {"_args":[["ssh2-streams@0.4.10","/home/rafaelgss/repos/github-action-ssh"]],"_from":"ssh2-streams@0.4.10","_id":"ssh2-streams@0.4.10","_inBundle":false,"_integrity":"sha512-8pnlMjvnIZJvmTzUIIA5nT4jr2ZWNNVHwyXfMGdRJbug9TpI3kd99ffglgfSWqujVv/0gxwMsDn9j9RVst8yhQ==","_location":"/ssh2-streams","_phantomChildren":{},"_requested":{"type":"version","registry":true,"raw":"ssh2-streams@0.4.10","name":"ssh2-streams","escapedName":"ssh2-streams","rawSpec":"0.4.10","saveSpec":null,"fetchSpec":"0.4.10"},"_requiredBy":["/ssh2"],"_resolved":"https://registry.npmjs.org/ssh2-streams/-/ssh2-streams-0.4.10.tgz","_spec":"0.4.10","_where":"/home/rafaelgss/repos/github-action-ssh","author":{"name":"Brian White","email":"mscdex@mscdex.net"},"bugs":{"url":"https://github.com/mscdex/ssh2-streams/issues"},"dependencies":{"asn1":"~0.2.0","bcrypt-pbkdf":"^1.0.2","streamsearch":"~0.1.2"},"description":"SSH2 and SFTP(v3) client/server protocol streams for node.js","engines":{"node":">=5.2.0"},"homepage":"https://github.com/mscdex/ssh2-streams#readme","keywords":["ssh","ssh2","sftp","secure","protocol","streams","client","server"],"licenses":[{"type":"MIT","url":"http://github.com/mscdex/ssh2-streams/raw/master/LICENSE"}],"main":"./index","name":"ssh2-streams","repository":{"type":"git","url":"git+ssh://git@github.com/mscdex/ssh2-streams.git"},"scripts":{"test":"node test/test.js"},"version":"0.4.10"};
 
 /***/ }),
 
