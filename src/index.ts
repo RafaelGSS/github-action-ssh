@@ -22,8 +22,13 @@ async function run() {
       tryKeyboard
     );
 
-    await executeCommand(ssh, command);
+    const commands = command.split('\n')
+    for (let i = 0; i < commands.length; i++) {
+      const stdout = await executeCommand(ssh, commands[i]);
+      core.setOutput(`cmd-${i}`, stdout);
+    }
 
+    console.log('✅ SSH Action finished.');
     ssh.dispose();
   } catch (err) {
     core.setFailed(err);
@@ -66,27 +71,20 @@ async function connect(
   return ssh;
 }
 
-async function executeCommand(ssh: NodeSSH, command: string) {
+async function executeCommand(ssh: NodeSSH, command: string): Promise<string> {
   console.log(`Executing command: ${command}`);
 
   try {
-    const {code} = await ssh.exec(command, [], {
-      stream: 'both',
-      onStdout(chunk) {
-        console.log(chunk.toString('utf8'));
-      },
-      onStderr(chunk) {
-        console.log(chunk.toString('utf8'));
-      }
-    });
+    const { code, stdout, stderr } = await ssh.execCommand(command);
 
     if (code > 0) {
       throw Error(`Command exited with code ${code}`);
     }
-    console.log('✅ SSH Action finished.');
-    if (ssh.isConnected()) {
-      ssh.dispose()
+
+    if (stderr) {
+      console.error('Stderr', stderr);
     }
+    return stdout;
   } catch (err) {
     console.error(
       `⚠️ An error happened executing command ${command}.`,
