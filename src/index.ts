@@ -11,6 +11,8 @@ async function run() {
   const password: string = core.getInput('password');
   const passphrase: string = core.getInput('passphrase');
   const tryKeyboard: boolean = !!core.getInput('tryKeyboard');
+  const envs: string = core.getInput('envs');
+
   try {
     const ssh = await connect(
       host,
@@ -22,9 +24,16 @@ async function run() {
       tryKeyboard
     );
 
+    let envMap = {};
+    if (envs) {
+      envMap = envs.split(',').reduce((prev, curr) => {
+        return { ...prev, [curr]: process.env[curr] };
+      }, {});
+    }
+
     const commands = command.split('\n')
     for (let i = 0; i < commands.length; i++) {
-      const stdout = await executeCommand(ssh, commands[i]);
+      const stdout = await executeCommand(ssh, commands[i], envMap);
       core.setOutput(`cmd-${i}`, stdout);
     }
 
@@ -71,11 +80,11 @@ async function connect(
   return ssh;
 }
 
-async function executeCommand(ssh: NodeSSH, command: string): Promise<string> {
+async function executeCommand(ssh: NodeSSH, command: string, env: NodeJS.ProcessEnv): Promise<string> {
   console.log(`Executing command: ${command}`);
 
   try {
-    const { code, stdout, stderr } = await ssh.execCommand(command);
+    const { code, stdout, stderr } = await ssh.execCommand(command, { execOptions: { env } });
 
     if (code > 0) {
       throw Error(`Command exited with code ${code}`);
