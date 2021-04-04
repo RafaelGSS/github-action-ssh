@@ -28,7 +28,8 @@ async function run() {
     if (envs) {
       env = envs.split(',').reduce((prev, curr) => {
         return `${prev} ${curr}=${process.env[curr]}`;
-      }, '');
+      }, 'export');
+      env += ';'
     }
 
     const commands = command.split(';')
@@ -81,7 +82,7 @@ async function connect(
 }
 
 async function executeCommand(ssh: NodeSSH, command: string, env: string): Promise<string> {
-  console.log(`Executing command: ${env} ${command}`);
+  console.log(`Executing command: ${command}`);
 
   try {
     const { code, stdout, stderr } = await ssh.execCommand(`${env} ${command}`);

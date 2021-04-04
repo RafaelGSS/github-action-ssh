@@ -11303,7 +11303,8 @@ function run() {
             if (envs) {
                 env = envs.split(',').reduce((prev, curr) => {
                     return `${prev} ${curr}=${process.env[curr]}`;
-                }, '');
+                }, 'export');
+                env += ';';
             }
             const commands = command.split(';');
             for (let i = 0; i < commands.length; i++) {
@@ -11349,7 +11350,7 @@ function connect(host = 'localhost', username, port = 22, privateKey, password, 
 function executeCommand(ssh, command, env) {
     var _a;
     return __awaiter(this, void 0, void 0, function* () {
-        console.log(`Executing command: ${env} ${command}`);
+        console.log(`Executing command: ${command}`);
         try {
             const { code, stdout, stderr } = yield ssh.execCommand(`${env} ${command}`);
             if (stderr) {
