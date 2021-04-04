@@ -81,7 +81,7 @@ async function connect(
 }
 
 async function executeCommand(ssh: NodeSSH, command: string, env: string): Promise<string> {
-  console.log(`Executing command: ${command}`);
+  console.log(`Executing command: ${env} ${command}`);
 
   try {
     const { code, stdout, stderr } = await ssh.execCommand(`${env} ${command}`);
