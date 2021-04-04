@@ -24,17 +24,16 @@ async function run() {
       tryKeyboard
     );
 
-    let envMap = {};
+    let env = '';
     if (envs) {
-      envMap = envs.split(',').reduce((prev, curr) => {
-        return { ...prev, [curr]: process.env[curr] };
-      }, {});
+      env = envs.split(',').reduce((prev, curr) => {
+        return `${prev} ${curr}=${process.env[curr]}`;
+      }, '');
     }
 
     const commands = command.split(';')
     for (let i = 0; i < commands.length; i++) {
-      const stdout = await executeCommand(ssh, commands[i], envMap);
-      console.log('Stdout', stdout)
+      const stdout = await executeCommand(ssh, commands[i], env);
       core.setOutput(`cmd-${i}`, stdout);
     }
 
@@ -81,27 +80,20 @@ async function connect(
   return ssh;
 }
 
-async function executeCommand(ssh: NodeSSH, command: string, env: NodeJS.ProcessEnv): Promise<string> {
+async function executeCommand(ssh: NodeSSH, command: string, env: string): Promise<string> {
   console.log(`Executing command: ${command}`);
 
   try {
-    const { code, stdout, stderr } = await ssh.execCommand(command, {
-      execOptions: {
-        env: {
-          'PR_NUMBER': '2',
-          key: 'PR_NUMBER',
-          value: '3'
-        }
-      }
-    });
+    const { code, stdout, stderr } = await ssh.execCommand(`${env} ${command}`);
+
+    if (stderr) {
+      throw new Error(stderr);
+    }
 
     if (code > 0) {
       throw Error(`Command exited with code ${code}`);
     }
 
-    if (stderr) {
-      console.error('Stderr', stderr);
-    }
     return stdout;
   } catch (err) {
     console.error(
