@@ -11307,10 +11307,9 @@ function run() {
                 env += ';';
             }
             const commands = command.split(';');
-            for (let i = 1; i <= commands.length; i++) {
+            for (let i = 0; i < commands.length; i++) {
                 const stdout = yield executeCommand(ssh, commands[i], env);
-                console.log('Stdout cmd' + i, stdout);
-                core.setOutput(`cmd-${i}`, stdout);
+                core.setOutput(`cmd-${i + 1}`, stdout);
             }
             console.log('✅ SSH Action finished.');
             ssh.dispose();
