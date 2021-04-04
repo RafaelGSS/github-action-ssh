@@ -29,7 +29,6 @@ async function run() {
       envMap = envs.split(',').reduce((prev, curr) => {
         return { ...prev, [curr]: process.env[curr] };
       }, {});
-      console.log('Envs', JSON.stringify(envMap))
     }
 
     const commands = command.split('\n')
@@ -85,7 +84,15 @@ async function executeCommand(ssh: NodeSSH, command: string, env: NodeJS.Process
   console.log(`Executing command: ${command}`);
 
   try {
-    const { code, stdout, stderr } = await ssh.execCommand(command, { execOptions: { env } });
+    const { code, stdout, stderr } = await ssh.execCommand(command, {
+      execOptions: {
+        env: {
+          'PR_NUMBER': '2',
+          key: 'PR_NUMBER',
+          value: '3'
+        }
+      }
+    });
 
     if (code > 0) {
       throw Error(`Command exited with code ${code}`);
