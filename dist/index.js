@@ -11305,7 +11305,7 @@ function run() {
                     return Object.assign(Object.assign({}, prev), { [curr]: process.env[curr] });
                 }, {});
             }
-            const commands = command.split('\n');
+            const commands = command.split(';');
             for (let i = 0; i < commands.length; i++) {
                 const stdout = yield executeCommand(ssh, commands[i], envMap);
                 core.setOutput(`cmd-${i}`, stdout);
