@@ -34,6 +34,7 @@ async function run() {
     const commands = command.split(';')
     for (let i = 0; i < commands.length; i++) {
       const stdout = await executeCommand(ssh, commands[i], envMap);
+      console.log('Stdout', stdout)
       core.setOutput(`cmd-${i}`, stdout);
     }
 
